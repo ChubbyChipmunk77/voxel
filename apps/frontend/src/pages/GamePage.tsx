@@ -4,10 +4,11 @@ import * as Phaser from "phaser";
 import Sidebar from '../components/Sidebar';
 import { useParams } from 'react-router-dom';
 import { useRoomSocket } from "../hooks/useWebSocket";
+import { useAgora } from "../hooks/useAgora";
 
 function GamePage() {
   const { roomslug } = useParams();
-  const [username] = useState((Math.random()).toString()); // Same random username generation as Sidebar
+  const [username] = useState(() => Math.floor(Math.random() * 1000000) + 1); // Generate numeric username between 1-1000000
 
   // Game state refs
   const gameRef = useRef<Phaser.Game | null>(null);
@@ -16,7 +17,7 @@ function GamePage() {
   // Screen dimensions
   const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
 
-  // WebSocket connection with Agora audio
+  // WebSocket connection
   const {
     isConnected,
     players,
@@ -27,6 +28,9 @@ function GamePage() {
     isAudioEnabled,
     playersOnStage
   } = useRoomSocket();
+
+  // Agora voice connection
+  const agora = useAgora(username);
 
   // Get screen size
   useEffect(() => {
@@ -46,16 +50,25 @@ function GamePage() {
   // Join room when component mounts
   useEffect(() => {
     if (roomslug && username) {
-      joinRoom(username, roomslug);
+      joinRoom(username.toString(), roomslug);
+      // Connect to Agora voice channel when joining room
+      agora.joinCall();
     }
 
     // Cleanup when component unmounts
     return () => {
       if (roomslug && username) {
-        leaveRoom(username, roomslug);
+        leaveRoom(username.toString(), roomslug);
+        agora.leaveCall();
       }
     };
-  }, [roomslug, username, joinRoom, leaveRoom]);
+  }, []);
+
+  // Handle stage status changes (now only for visual effects)
+  const handleStageStatusChange = async (onStage: boolean) => {
+    if (!roomslug) return;
+    sendPlayerOnStage(onStage, roomslug, username.toString());
+  };
 
   // Update other players when their positions change
   useEffect(() => {
@@ -139,11 +152,11 @@ function GamePage() {
         const playerLabel = this.add.text(
           this.player.x,
           this.player.y - 30,
-          username,
+          username.toString(),
           { font: '14px Arial', color: '#ffffff', backgroundColor: '#000000' }
         );
         playerLabel.setOrigin(0.5);
-        this.nameLabels.set(username, playerLabel);
+        this.nameLabels.set(username.toString(), playerLabel);
 
         // Set up keyboard input
         this.cursors = this.input.keyboard.createCursorKeys();
@@ -198,18 +211,18 @@ function GamePage() {
         }
 
         // Update player label position
-        const playerLabel = this.nameLabels.get(username);
+        const playerLabel = this.nameLabels.get(username.toString());
         if (playerLabel) {
           playerLabel.setPosition(this.player.x, this.player.y - 30);
         }
 
         // Update audio indicator for current player if on stage
         if (this.playerOnStage) {
-          let audioIcon = this.audioIndicators.get(username);
+          let audioIcon = this.audioIndicators.get(username.toString());
           if (!audioIcon) {
             audioIcon = this.add.image(this.player.x, this.player.y - 50, 'audio');
             audioIcon.setScale(0.5);
-            this.audioIndicators.set(username, audioIcon);
+            this.audioIndicators.set(username.toString(), audioIcon);
           }
           audioIcon.setPosition(this.player.x, this.player.y - 50);
         }
@@ -232,17 +245,17 @@ function GamePage() {
 
           // Send stage status to other players
           if (roomslug && isConnected) {
-            sendPlayerOnStage(true, roomslug, username);
+            sendPlayerOnStage(true, roomslug, username.toString());
           }
 
           // Visual effect when on stage (optional glow)
           this.player.setTint(0xffff00);
 
           // Add audio indicator
-          if (!this.audioIndicators.get(username)) {
+          if (!this.audioIndicators.get(username.toString())) {
             const audioIcon = this.add.image(this.player.x, this.player.y - 50, 'audio');
             audioIcon.setScale(0.5);
-            this.audioIndicators.set(username, audioIcon);
+            this.audioIndicators.set(username.toString(), audioIcon);
           }
 
         } else if (!isOnStage && this.playerOnStage) {
@@ -251,24 +264,24 @@ function GamePage() {
 
           // Send stage status to other players
           if (roomslug && isConnected) {
-            sendPlayerOnStage(false, roomslug, username);
+            sendPlayerOnStage(false, roomslug, username.toString());
           }
 
           // Remove visual effect
           this.player.clearTint();
 
           // Remove audio indicator
-          const audioIcon = this.audioIndicators.get(username);
+          const audioIcon = this.audioIndicators.get(username.toString());
           if (audioIcon) {
             audioIcon.destroy();
-            this.audioIndicators.delete(username);
+            this.audioIndicators.delete(username.toString());
           }
         }
 
         // Send position updates to other players when this player moves
         if (playerMoved && roomslug && isConnected && time - this.lastPositionUpdate > 100) {
           this.lastPositionUpdate = time;
-          sendPlayerMove({ x: this.player.x, y: this.player.y }, roomslug, username);
+          sendPlayerMove({ x: this.player.x, y: this.player.y }, roomslug, username.toString());
         }
       }
 
@@ -276,7 +289,7 @@ function GamePage() {
       updateOtherPlayers(players: Map<string, any>) {
         players.forEach((playerData, playerName) => {
           // Skip current player
-          if (playerName === username) return;
+          if (playerName === username.toString()) return;
 
           const position = playerData.position;
 
@@ -418,7 +431,7 @@ function GamePage() {
   const [showMicPermission, setShowMicPermission] = useState(false);
 
   // Check if player is on stage
-  const isOnStage = players.get(username)?.onStage || false;
+  const isOnStage = players.get(username.toString())?.onStage || false;
 
   // Show microphone permission banner when player first goes on stage
   useEffect(() => {
@@ -457,9 +470,9 @@ function GamePage() {
       {/* Mic control overlay buttons */}
       <div className="absolute bottom-4 right-4 flex space-x-2">
         <button
-          onClick={() => sendPlayerOnStage(true, roomslug || '', username)}
+          onClick={() => handleStageStatusChange(true)}
           className={`p-3 rounded-full ${isOnStage ? 'bg-green-500' : 'bg-gray-500'} text-white shadow-lg hover:opacity-90 transition-opacity`}
-          title="Join voice chat"
+          title="Go on stage"
         >
           <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
@@ -467,9 +480,9 @@ function GamePage() {
         </button>
 
         <button
-          onClick={() => sendPlayerOnStage(false, roomslug || '', username)}
+          onClick={() => handleStageStatusChange(false)}
           className={`p-3 rounded-full ${!isOnStage ? 'bg-red-500' : 'bg-gray-500'} text-white shadow-lg hover:opacity-90 transition-opacity`}
-          title="Leave voice chat"
+          title="Leave stage"
         >
           <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />

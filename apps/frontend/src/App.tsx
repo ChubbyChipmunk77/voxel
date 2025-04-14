@@ -9,7 +9,7 @@ function App() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full max-w-4xl">
                <Link
-                  to="/meet/test"
+                  to="/game/test"
                   className="bg-white p-6 rounded-lg shadow-md hover:shadow-lg transition-shadow"
                >
                   <h2 className="text-xl font-semibold mb-2">Join Voice Meeting</h2>
@@ -28,7 +28,7 @@ function App() {
             </div>
 
             <div className="mt-12 text-center">
-               <p className="text-gray-500">Create your own room by changing the URL: /meet/your-room-name</p>
+               <p className="text-gray-500">Create your own room by changing the URL: /game/your-room-name</p>
             </div>
          </div>
       </>

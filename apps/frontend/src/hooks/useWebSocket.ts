@@ -187,9 +187,13 @@ export const useRoomSocket = (): UseRoomSocketReturn => {
 
       setIsAudioEnabled(true);
 
+      // Show alert to confirm successful connection to Agora channel
+      alert(`Successfully connected to Agora voice channel: ${roomslug}`);
+
       return true;
     } catch (error) {
       console.error('Error joining Agora channel:', error);
+      alert(`Failed to connect to Agora voice channel: ${error}`);
       return false;
     }
   }, []);
@@ -234,7 +238,10 @@ export const useRoomSocket = (): UseRoomSocketReturn => {
 
     socketRef.current.send(JSON.stringify(joinMessage));
     console.log(`User ${username} joined room ${roomslug}`);
-  }, []);
+
+    // Connect to Agora voice channel when joining the room
+    joinAgoraChannel(roomslug, username);
+  }, [joinAgoraChannel]);
 
   const sendMessage = useCallback((msg: string, roomslug: string, username: string) => {
     if (!socketRef.current || socketRef.current.readyState !== WebSocket.OPEN) {
@@ -291,7 +298,7 @@ export const useRoomSocket = (): UseRoomSocketReturn => {
     });
   }, []);
 
-  // Send player stage status update with audio handling
+  // Send player stage status update without audio handling
   const sendPlayerOnStage = useCallback(async (onStage: boolean, roomslug: string, username: string) => {
     if (!socketRef.current || socketRef.current.readyState !== WebSocket.OPEN) {
       console.error("WebSocket is not connected");
@@ -318,12 +325,8 @@ export const useRoomSocket = (): UseRoomSocketReturn => {
       return newMap;
     });
 
-    // Handle Agora audio based on stage status
+    // Update players on stage list
     if (onStage) {
-      // Player is on stage - join Agora channel to start broadcasting audio
-      await joinAgoraChannel(roomslug, username);
-
-      // Add to players on stage list
       setPlayersOnStage(prev => {
         if (!prev.includes(username)) {
           return [...prev, username];
@@ -331,13 +334,9 @@ export const useRoomSocket = (): UseRoomSocketReturn => {
         return prev;
       });
     } else {
-      // Player left stage - leave Agora channel to stop broadcasting audio
-      await leaveAgoraChannel();
-
-      // Remove from players on stage list
       setPlayersOnStage(prev => prev.filter(player => player !== username));
     }
-  }, [joinAgoraChannel, leaveAgoraChannel]);
+  }, []);
 
   const leaveRoom = useCallback((username: string, roomslug: string) => {
     if (!socketRef.current || socketRef.current.readyState !== WebSocket.OPEN) {
@@ -345,10 +344,8 @@ export const useRoomSocket = (): UseRoomSocketReturn => {
       return;
     }
 
-    // If user is on stage, leave Agora channel first
-    if (players.get(username)?.onStage) {
-      leaveAgoraChannelRef.current();
-    }
+    // Leave Agora channel when leaving the room
+    leaveAgoraChannel();
 
     const leaveMsg: LeaveMessage = {
       type: 'leave',
@@ -358,7 +355,7 @@ export const useRoomSocket = (): UseRoomSocketReturn => {
 
     socketRef.current.send(JSON.stringify(leaveMsg));
     console.log(`User ${username} left room ${roomslug}`);
-  }, [players]);
+  }, [leaveAgoraChannel]);
 
   useEffect(() => {
     const connect = () => {

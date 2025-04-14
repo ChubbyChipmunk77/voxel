@@ -10,7 +10,7 @@ createRoot(document.getElementById('root')!).render(
   <BrowserRouter>
     <Routes>
       <Route path='/' element={<App />}></Route>
-      <Route path='/meet/:roomslug' element={<GamePage />}></Route>
+      <Route path='/game/:roomslug' element={<GamePage />}></Route>
     </Routes>
   </BrowserRouter>
   // </StrictMode>,

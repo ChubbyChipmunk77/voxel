@@ -30,6 +30,7 @@ if (!APP_ID || !APP_CERTIFICATE) {
 //@ts-ignore
 app.get('/get-token', (req, res) => {
   const { roomName, uid } = req.query as { roomName: string; uid: string };
+  console.log(roomName, uid);
 
   if (!roomName || !uid) {
     return res.status(400).json({ error: 'Missing roomName or uid parameter' });
@@ -48,6 +49,8 @@ app.get('/get-token', (req, res) => {
     RtcRole.PUBLISHER,
     Math.floor(Date.now() / 1000) + 3600 // Token expires in 1 hour
   );
+  console.log(token);
+
 
   res.json({
     token,
