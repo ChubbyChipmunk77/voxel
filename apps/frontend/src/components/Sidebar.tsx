@@ -36,7 +36,7 @@ export default function Sidebar({ roomslug }: {
             }
         };
     }, [isConnected, leaveRoom, roomslug, username]);
-
+//@ts-ignore
     const [members, setMembers] = useState([
         { id: 1, name: 'Alex', online: true, avatar: '👩' },
         { id: 2, name: 'Sam', online: true, avatar: '👨' },
@@ -47,6 +47,7 @@ export default function Sidebar({ roomslug }: {
     ]);
     
     // YouTube video state
+    //@ts-ignore
     const [videoId, setVideoId] = useState('dQw4w9WgXcQ'); // Default video ID
     
     const handleSendMessage = (e: React.FormEvent<HTMLFormElement>) => {

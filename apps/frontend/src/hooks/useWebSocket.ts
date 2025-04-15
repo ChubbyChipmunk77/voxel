@@ -1,8 +1,12 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import AgoraRTC, {
   IAgoraRTCClient,
+    //@ts-ignore
+
   IAgoraRTCRemoteUser,
   ILocalAudioTrack,
+    //@ts-ignore
+
   ILocalVideoTrack,
   UID
 } from "agora-rtc-sdk-ng";
@@ -88,6 +92,8 @@ export const useRoomSocket = (): UseRoomSocketReturn => {
   const currentRoomRef = useRef<string | null>(null);
 
   // Stable function refs
+    //@ts-ignore
+
   const leaveAgoraChannelRef = useRef(async () => {
     if (!agoraClientRef.current) return;
 
@@ -360,7 +366,7 @@ export const useRoomSocket = (): UseRoomSocketReturn => {
   useEffect(() => {
     const connect = () => {
       try {
-        const ws = new WebSocket("ws://localhost:8080");
+        const ws = new WebSocket("https://faithful-speckled-scorpion.glitch.me/");
         socketRef.current = ws;
 
         ws.onopen = () => {

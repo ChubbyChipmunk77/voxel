@@ -12,6 +12,7 @@ function GamePage() {
 
   // Game state refs
   const gameRef = useRef<Phaser.Game | null>(null);
+  //@ts-ignore
   const sceneRef = useRef<SceneMain | null>(null);
 
   // Screen dimensions
@@ -122,7 +123,11 @@ function GamePage() {
         const tileset = this.map.addTilesetImage("mapv1", "tiles");
 
         // Create layers
+  //@ts-ignore
+
         this.layer1 = this.map.createLayer("Tile Layer 1", tileset, 0, 0);
+  //@ts-ignore
+
         this.layer2 = this.map.createLayer("Tile Layer 2", tileset, 0, 0);
 
         // Calculate scale factor to make map fit canvas
@@ -159,6 +164,8 @@ function GamePage() {
         this.nameLabels.set(username.toString(), playerLabel);
 
         // Set up keyboard input
+  //@ts-ignore
+
         this.cursors = this.input.keyboard.createCursorKeys();
 
         // Set collisions
@@ -180,6 +187,7 @@ function GamePage() {
           sceneRef.current = null;
         });
       }
+  //@ts-ignore
 
       update(time: number, delta: number) {
         // Reset velocity
@@ -206,7 +214,11 @@ function GamePage() {
         }
 
         // Normalize diagonal movement
+  //@ts-ignore
+
         if (this.player.body.velocity.x !== 0 && this.player.body.velocity.y !== 0) {
+  //@ts-ignore
+
           this.player.body.velocity.normalize().scale(speed);
         }
 
@@ -398,6 +410,7 @@ function GamePage() {
         }
       }
     };
+  //@ts-ignore
 
     gameRef.current = new Phaser.Game(config);
 

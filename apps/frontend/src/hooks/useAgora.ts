@@ -145,7 +145,7 @@ export const useAgora = (username: number) => {
 
             // Get token from backend
             console.log("Fetching token from backend...");
-            const res = await fetch(`http://localhost:5000/get-token?roomName=${encodeURIComponent(roomslug)}&uid=${username}`);
+            const res = await fetch(`https://voxel-backend-12op.onrender.com/get-token?roomName=${encodeURIComponent(roomslug)}&uid=${username}`);
 
             if (!res.ok) {
                 throw new Error('Failed to get token');
