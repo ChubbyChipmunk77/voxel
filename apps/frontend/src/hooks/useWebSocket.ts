@@ -119,7 +119,7 @@ export const useRoomSocket = (): UseRoomSocketReturn => {
     // Check if client already exists to prevent duplication
     if (agoraClientRef.current) return;
 
-    const agoraAppId = import.meta.env.VITE_AGORA_APP_ID as string;
+    const agoraAppId = "23828ec815ef48438b31cb5bd5c7103f";
 
     if (agoraAppId) {
       agoraClientRef.current = AgoraRTC.createClient({
@@ -174,7 +174,7 @@ export const useRoomSocket = (): UseRoomSocketReturn => {
       }
 
       // Join the Agora channel with the token and numeric UID from the server
-      await agoraClientRef.current.join(import.meta.env.VITE_AGORA_APP_ID, roomslug, data.token, data.uid);
+      await agoraClientRef.current.join("23828ec815ef48438b31cb5bd5c7103f", roomslug, data.token, data.uid);
 
       // Create and publish local audio track
       localAudioTrackRef.current = await AgoraRTC.createMicrophoneAudioTrack();
