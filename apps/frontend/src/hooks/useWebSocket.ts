@@ -194,7 +194,7 @@ export const useRoomSocket = (): UseRoomSocketReturn => {
       setIsAudioEnabled(true);
 
       // Show alert to confirm successful connection to Agora channel
-      alert(`Successfully connected to Agora voice channel: ${roomslug}`);
+      // alert(`Successfully connected to Agora voice channel: ${roomslug}`);
 
       return true;
     } catch (error) {

@@ -185,9 +185,9 @@ export const useAgora = (username: number) => {
 
             console.log("✅ Joined voice channel:", roomslug);
         } catch (err) {
-            console.error("Error joining call:", err);
+            // console.error("Error joining call:", err);
             setError(err instanceof Error ? err.message : 'Failed to join call');
-            alert(`Failed to connect to Agora voice channel: ${err}`);
+            // alert(`Failed to connect to Agora voice channel: ${err}`);
         }
     }, [roomslug, isJoined, username]);
 
