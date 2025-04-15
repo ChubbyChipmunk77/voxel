@@ -3,6 +3,7 @@ import cors from 'cors';
 import types, { Request, Response } from 'express';
 import { RtcTokenBuilder, RtcRole } from 'agora-access-token';
 import dotenv from 'dotenv';
+import crypto from "crypto"
 
 // Load environment variables
 dotenv.config();
@@ -19,8 +20,8 @@ const PORT = process.env.PORT || 5000;
 app.use(cors());
 
 // Get Agora credentials from environment variables
-const APP_ID = process.env.AGORA_APP_ID;
-const APP_CERTIFICATE = process.env.AGORA_APP_CERTIFICATE;
+const APP_ID = "23828ec815ef48438b31cb5bd5c7103f";
+const APP_CERTIFICATE = "23828ec815ef48438b31cb5bd5c7103f";
 
 if (!APP_ID || !APP_CERTIFICATE) {
   console.error('Missing required Agora credentials in environment variables');

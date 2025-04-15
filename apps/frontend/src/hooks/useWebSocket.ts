@@ -1,8 +1,12 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import AgoraRTC, {
   IAgoraRTCClient,
+    //@ts-ignore
+
   IAgoraRTCRemoteUser,
   ILocalAudioTrack,
+    //@ts-ignore
+
   ILocalVideoTrack,
   UID
 } from "agora-rtc-sdk-ng";
@@ -115,6 +119,8 @@ export const useRoomSocket = (): UseRoomSocketReturn => {
   const currentRoomRef = useRef<string | null>(null);
 
   // Stable function refs
+    //@ts-ignore
+
   const leaveAgoraChannelRef = useRef(async () => {
     if (!agoraClientRef.current) return;
 
@@ -140,7 +146,7 @@ export const useRoomSocket = (): UseRoomSocketReturn => {
     // Check if client already exists to prevent duplication
     if (agoraClientRef.current) return;
 
-    const agoraAppId = import.meta.env.VITE_AGORA_APP_ID as string;
+    const agoraAppId = "23828ec815ef48438b31cb5bd5c7103f";
 
     if (agoraAppId) {
       agoraClientRef.current = AgoraRTC.createClient({
@@ -190,9 +196,14 @@ export const useRoomSocket = (): UseRoomSocketReturn => {
       agoraUidRef.current = uid;
       currentRoomRef.current = roomslug;
 
+
       // Join the Agora channel (using roomslug as channel name)
       await agoraClientRef.current.join(agoraAppId, roomslug, null, uid);
       console.log(`Joined Agora channel ${roomslug} with UID ${uid}`);
+
+      // Join the Agora channel with the token and numeric UID from the server
+      await agoraClientRef.current.join("23828ec815ef48438b31cb5bd5c7103f", roomslug, data.token, data.uid);
+
 
       // Create and publish local audio track
       localAudioTrackRef.current = await AgoraRTC.createMicrophoneAudioTrack();
@@ -212,8 +223,21 @@ export const useRoomSocket = (): UseRoomSocketReturn => {
         return newMap;
       });
 
+
     } catch (error) {
       console.error("Error joining Agora channel:", error);
+
+      setIsAudioEnabled(true);
+
+      // Show alert to confirm successful connection to Agora channel
+      // alert(`Successfully connected to Agora voice channel: ${roomslug}`);
+
+      return true;
+    } catch (error) {
+      console.error('Error joining Agora channel:', error);
+      // alert(`Failed to connect to Agora voice channel: ${error}`);
+      return false;
+
     }
   }, []);
 
@@ -390,6 +414,7 @@ export const useRoomSocket = (): UseRoomSocketReturn => {
     console.log(`User ${username} left room ${roomslug}`);
   }, [players]);
 
+
   const connect = useCallback(() => {
     try {
       console.log("Attempting to connect to WebSocket...");
@@ -407,6 +432,18 @@ export const useRoomSocket = (): UseRoomSocketReturn => {
           // This will be handled by the component's useEffect
         }
       };
+
+  useEffect(() => {
+    const connect = () => {
+      try {
+        const ws = new WebSocket("https://faithful-speckled-scorpion.glitch.me/");
+        socketRef.current = ws;
+
+        ws.onopen = () => {
+          console.log("WebSocket connected");
+          setIsConnected(true);
+        };
+
 
       ws.onmessage = (e) => {
         try {

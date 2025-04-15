@@ -1,9 +1,6 @@
-import { useState } from "react";
 
 // Import fonts (assuming you're using Google Fonts or similar)
 // You'd need to properly set these up in your Vite project
-import { Poppins } from "@fontsource/poppins"; // Adjust based on your actual font setup
-import { VT323 } from "@fontsource/vt323"; // Adjust based on your actual font setup
 
 // CSS class names for fonts
 const pop = { className: "font-poppins" };

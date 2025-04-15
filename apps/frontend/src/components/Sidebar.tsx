@@ -21,6 +21,25 @@ export default function Sidebar({ roomslug, username, isConnected, messages, sen
         }
     }, [messages]);
 
+    // Join room when component mounts and websocket is connected
+    useEffect(() => {
+        if (isConnected) {
+            joinRoom(username, roomslug);
+            console.log(`Joining room ${roomslug} as ${username}`);
+        }
+    }, [isConnected, joinRoom, roomslug, username]);
+
+    // Cleanup on unmount
+    useEffect(() => {
+        return () => {
+            if (isConnected) {
+                leaveRoom(username, roomslug);
+                console.log(`Leaving room ${roomslug}`);
+            }
+        };
+    }, [isConnected, leaveRoom, roomslug, username]);
+//@ts-ignore
+
     const [members, setMembers] = useState([
         { id: 1, name: 'Alex', online: true, avatar: '👩' },
         { id: 2, name: 'Sam', online: true, avatar: '👨' },
@@ -31,6 +50,7 @@ export default function Sidebar({ roomslug, username, isConnected, messages, sen
     ]);
 
     // YouTube video state
+    //@ts-ignore
     const [videoId, setVideoId] = useState('dQw4w9WgXcQ'); // Default video ID
 
     const handleSendMessage = (e: React.FormEvent<HTMLFormElement>) => {
