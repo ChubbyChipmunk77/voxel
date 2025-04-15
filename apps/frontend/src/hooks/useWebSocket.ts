@@ -199,7 +199,7 @@ export const useRoomSocket = (): UseRoomSocketReturn => {
       return true;
     } catch (error) {
       console.error('Error joining Agora channel:', error);
-      alert(`Failed to connect to Agora voice channel: ${error}`);
+      // alert(`Failed to connect to Agora voice channel: ${error}`);
       return false;
     }
   }, []);
